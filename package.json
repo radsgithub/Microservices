@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "proto:gen": "mkdir -p user-service/src/proto && npx grpc_tools_node_protoc --plugin=protoc-gen-ts=./node_modules/.bin/protoc-gen-ts --ts_out=user-service/src/proto --js_out=import_style=commonjs,binary:user-service/src/proto --grpc_out=grpc_js:user-service/src/proto --proto_path=./proto ./proto/user.proto"
+  },
+  "devDependencies": {
+    "@grpc/grpc-js": "^1.13.4",
+    "@grpc/proto-loader": "^0.8.0",
+    "grpc_tools_node_protoc_ts": "^5.3.3",
+    "grpc-tools": "^1.13.0",
+    "protoc-gen-ts": "^0.8.7"
+  }
+}
