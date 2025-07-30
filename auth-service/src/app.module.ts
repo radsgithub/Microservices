@@ -23,7 +23,7 @@ import { join } from 'path';
             envFilePath: ['../.env'],
         }),
         // MongooseModule.forRoot('mongodb://mongodb-auth:27017/auth-db'),
-        MongooseModule.forRoot('mongodb+srv://radhika:microservices@microservices.lpvgrrr.mongodb.net/auth-db'),
+        MongooseModule.forRoot(`${process.env.MONGO_DB_URL}/auth-db`),
 
         AuthModule,
     ],

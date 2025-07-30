@@ -35,7 +35,7 @@ exports.AppModule = AppModule = __decorate([
                 envFilePath: ['../.env'],
             }),
             // MongooseModule.forRoot('mongodb://mongodb-auth:27017/auth-db'),
-            mongoose_1.MongooseModule.forRoot('mongodb+srv://radhika:microservices@microservices.lpvgrrr.mongodb.net/auth-db'),
+            mongoose_1.MongooseModule.forRoot(`${process.env.MONGO_DB_URL}/auth-db`),
             auth_module_1.AuthModule,
         ],
     })

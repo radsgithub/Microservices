@@ -12,13 +12,18 @@ const user_module_1 = require("./user/user.module");
 const mongoose_1 = require("@nestjs/mongoose");
 const path_1 = require("path");
 const microservices_1 = require("@nestjs/microservices");
+const config_1 = require("@nestjs/config");
 let AppModule = class AppModule {
 };
 exports.AppModule = AppModule;
 exports.AppModule = AppModule = __decorate([
     (0, common_1.Module)({
         imports: [
-            mongoose_1.MongooseModule.forRoot('mongodb+srv://radhika:microservices@microservices.lpvgrrr.mongodb.net/user-db'),
+            config_1.ConfigModule.forRoot({
+                isGlobal: true, // makes env vars available globally
+                envFilePath: ['../.env'],
+            }),
+            mongoose_1.MongooseModule.forRoot(`${process.env.MONGO_DB_URL}/user-db`),
             user_module_1.UserModule,
             microservices_1.ClientsModule.register([
                 {
