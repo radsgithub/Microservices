@@ -4,7 +4,7 @@
     "start": "npm run build && node dist/main",
     "start:dev": "nest start --watch",
     "build": "nest build && npm run copy:proto",
-    "copy:proto": "cp -r proto dist/proto"
+    "copy:proto": "cp -r proto dist"
   },
   "dependencies": {
     "@grpc/grpc-js": "^1.13.4",

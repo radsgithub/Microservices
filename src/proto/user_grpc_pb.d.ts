@@ -31,14 +31,14 @@ interface IUserServiceService_IFindOne extends grpc.MethodDefinition<user_pb.Use
     responseSerialize: grpc.serialize<user_pb.UserResponse>;
     responseDeserialize: grpc.deserialize<user_pb.UserResponse>;
 }
-interface IUserServiceService_IFindUser extends grpc.MethodDefinition<user_pb.FindUserRequest, user_pb.UserResponse> {
+interface IUserServiceService_IFindUser extends grpc.MethodDefinition<user_pb.FindUserRequest, user_pb.LoginUserResponse> {
     path: "/user.UserService/FindUser";
     requestStream: false;
     responseStream: false;
     requestSerialize: grpc.serialize<user_pb.FindUserRequest>;
     requestDeserialize: grpc.deserialize<user_pb.FindUserRequest>;
-    responseSerialize: grpc.serialize<user_pb.UserResponse>;
-    responseDeserialize: grpc.deserialize<user_pb.UserResponse>;
+    responseSerialize: grpc.serialize<user_pb.LoginUserResponse>;
+    responseDeserialize: grpc.deserialize<user_pb.LoginUserResponse>;
 }
 
 export const UserServiceService: IUserServiceService;
@@ -46,7 +46,7 @@ export const UserServiceService: IUserServiceService;
 export interface IUserServiceServer {
     createUser: grpc.handleUnaryCall<user_pb.CreateUserRequest, user_pb.UserResponse>;
     findOne: grpc.handleUnaryCall<user_pb.UserById, user_pb.UserResponse>;
-    findUser: grpc.handleUnaryCall<user_pb.FindUserRequest, user_pb.UserResponse>;
+    findUser: grpc.handleUnaryCall<user_pb.FindUserRequest, user_pb.LoginUserResponse>;
 }
 
 export interface IUserServiceClient {
@@ -56,9 +56,9 @@ export interface IUserServiceClient {
     findOne(request: user_pb.UserById, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
     findOne(request: user_pb.UserById, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
     findOne(request: user_pb.UserById, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
-    findUser(request: user_pb.FindUserRequest, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
-    findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
-    findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
+    findUser(request: user_pb.FindUserRequest, callback: (error: grpc.ServiceError | null, response: user_pb.LoginUserResponse) => void): grpc.ClientUnaryCall;
+    findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: user_pb.LoginUserResponse) => void): grpc.ClientUnaryCall;
+    findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: user_pb.LoginUserResponse) => void): grpc.ClientUnaryCall;
 }
 
 export class UserServiceClient extends grpc.Client implements IUserServiceClient {
@@ -69,7 +69,7 @@ export class UserServiceClient extends grpc.Client implements IUserServiceClient
     public findOne(request: user_pb.UserById, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
     public findOne(request: user_pb.UserById, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
     public findOne(request: user_pb.UserById, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
-    public findUser(request: user_pb.FindUserRequest, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
-    public findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
-    public findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: user_pb.UserResponse) => void): grpc.ClientUnaryCall;
+    public findUser(request: user_pb.FindUserRequest, callback: (error: grpc.ServiceError | null, response: user_pb.LoginUserResponse) => void): grpc.ClientUnaryCall;
+    public findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, callback: (error: grpc.ServiceError | null, response: user_pb.LoginUserResponse) => void): grpc.ClientUnaryCall;
+    public findUser(request: user_pb.FindUserRequest, metadata: grpc.Metadata, options: Partial<grpc.CallOptions>, callback: (error: grpc.ServiceError | null, response: user_pb.LoginUserResponse) => void): grpc.ClientUnaryCall;
 }

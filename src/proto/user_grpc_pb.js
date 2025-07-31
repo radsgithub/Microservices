@@ -26,6 +26,17 @@ function deserialize_user_FindUserRequest(buffer_arg) {
   return user_pb.FindUserRequest.deserializeBinary(new Uint8Array(buffer_arg));
 }
 
+function serialize_user_LoginUserResponse(arg) {
+  if (!(arg instanceof user_pb.LoginUserResponse)) {
+    throw new Error('Expected argument of type user.LoginUserResponse');
+  }
+  return Buffer.from(arg.serializeBinary());
+}
+
+function deserialize_user_LoginUserResponse(buffer_arg) {
+  return user_pb.LoginUserResponse.deserializeBinary(new Uint8Array(buffer_arg));
+}
+
 function serialize_user_UserById(arg) {
   if (!(arg instanceof user_pb.UserById)) {
     throw new Error('Expected argument of type user.UserById');
@@ -77,11 +88,11 @@ var UserServiceService = exports.UserServiceService = {
     requestStream: false,
     responseStream: false,
     requestType: user_pb.FindUserRequest,
-    responseType: user_pb.UserResponse,
+    responseType: user_pb.LoginUserResponse,
     requestSerialize: serialize_user_FindUserRequest,
     requestDeserialize: deserialize_user_FindUserRequest,
-    responseSerialize: serialize_user_UserResponse,
-    responseDeserialize: deserialize_user_UserResponse,
+    responseSerialize: serialize_user_LoginUserResponse,
+    responseDeserialize: deserialize_user_LoginUserResponse,
   },
 };
 

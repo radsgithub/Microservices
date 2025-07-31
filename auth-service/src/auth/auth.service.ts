@@ -113,14 +113,17 @@ export class AuthService {
     }
 
     async login(dto: LoginDto) {
+        console.log("here coness")
         // Fetch user from gRPC
         const user = await lastValueFrom(this.userServiceClient.FindUser({ email: dto.email }));
+        console.log(user, dto.password, user.password, "passwordddd")
 
         if (!user || !user.password) {
             throw new UnauthorizedException('Invalid credentials');
         }
 
         const isMatch = await bcrypt.compare(dto.password, user.password);
+        console.log(dto.password, user.password, "passwordddd")
         if (!isMatch) {
             throw new UnauthorizedException('Invalid credentials');
         }

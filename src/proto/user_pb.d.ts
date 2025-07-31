@@ -84,6 +84,8 @@ export class UserResponse extends jspb.Message {
     setIsactive(value: boolean): UserResponse;
     getProfileimage(): string;
     setProfileimage(value: string): UserResponse;
+    getPassword(): string;
+    setPassword(value: string): UserResponse;
 
     serializeBinary(): Uint8Array;
     toObject(includeInstance?: boolean): UserResponse.AsObject;
@@ -105,6 +107,51 @@ export namespace UserResponse {
         role: string,
         isactive: boolean,
         profileimage: string,
+        password: string,
+    }
+}
+
+export class LoginUserResponse extends jspb.Message { 
+    getId(): string;
+    setId(value: string): LoginUserResponse;
+    getEmail(): string;
+    setEmail(value: string): LoginUserResponse;
+    getFirstname(): string;
+    setFirstname(value: string): LoginUserResponse;
+    getLastname(): string;
+    setLastname(value: string): LoginUserResponse;
+    getPhone(): string;
+    setPhone(value: string): LoginUserResponse;
+    getRole(): string;
+    setRole(value: string): LoginUserResponse;
+    getIsactive(): boolean;
+    setIsactive(value: boolean): LoginUserResponse;
+    getProfileimage(): string;
+    setProfileimage(value: string): LoginUserResponse;
+    getPassword(): string;
+    setPassword(value: string): LoginUserResponse;
+
+    serializeBinary(): Uint8Array;
+    toObject(includeInstance?: boolean): LoginUserResponse.AsObject;
+    static toObject(includeInstance: boolean, msg: LoginUserResponse): LoginUserResponse.AsObject;
+    static extensions: {[key: number]: jspb.ExtensionFieldInfo<jspb.Message>};
+    static extensionsBinary: {[key: number]: jspb.ExtensionFieldBinaryInfo<jspb.Message>};
+    static serializeBinaryToWriter(message: LoginUserResponse, writer: jspb.BinaryWriter): void;
+    static deserializeBinary(bytes: Uint8Array): LoginUserResponse;
+    static deserializeBinaryFromReader(message: LoginUserResponse, reader: jspb.BinaryReader): LoginUserResponse;
+}
+
+export namespace LoginUserResponse {
+    export type AsObject = {
+        id: string,
+        email: string,
+        firstname: string,
+        lastname: string,
+        phone: string,
+        role: string,
+        isactive: boolean,
+        profileimage: string,
+        password: string,
     }
 }
 

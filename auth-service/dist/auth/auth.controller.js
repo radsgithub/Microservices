@@ -26,6 +26,7 @@ let AuthController = class AuthController {
         return this.authService.register(dto);
     }
     login(dto) {
+        console.log("here coness12112");
         return this.authService.login(dto);
     }
     async validate(body) {

@@ -128,12 +128,15 @@ let AuthService = class AuthService {
         return { message: 'User registered successfully' };
     }
     async login(dto) {
+        console.log("here coness");
         // Fetch user from gRPC
         const user = await (0, rxjs_1.lastValueFrom)(this.userServiceClient.FindUser({ email: dto.email }));
+        console.log(user, dto.password, user.password, "passwordddd");
         if (!user || !user.password) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }
         const isMatch = await bcrypt.compare(dto.password, user.password);
+        console.log(dto.password, user.password, "passwordddd");
         if (!isMatch) {
             throw new common_1.UnauthorizedException('Invalid credentials');
         }

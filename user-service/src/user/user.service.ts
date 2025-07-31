@@ -5,13 +5,17 @@ import { User, UserDocument } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create.dto';
 import { RpcException } from '@nestjs/microservices';
 import { status } from '@grpc/grpc-js';
-
+import * as bcrypt from 'bcrypt';
 @Injectable()
 export class UserService {
     constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) { }
 
     async create(createUserDto: CreateUserDto): Promise<User> {
-        const createdUser = new this.userModel(createUserDto);
+        const hashedPassword = await bcrypt.hash(createUserDto.password || "", 10);
+        const createdUser = new this.userModel({
+            ...createUserDto,
+            password: hashedPassword, // Replace plain password with hashed one
+        });
         return createdUser.save();
     }
 
@@ -31,16 +35,7 @@ export class UserService {
             });
         }
 
-        return {
-            id: user.id,
-            email: user.email,
-            firstName: user.firstName,
-            lastName: user.lastName,
-            phone: user.phone,
-            role: user.role,
-            isActive: user.isActive,
-            profileImage: user.profileImage,
-        };
+        return user
     }
 
 }
