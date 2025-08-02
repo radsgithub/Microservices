@@ -1,0 +1,35 @@
+syntax = "proto3";
+
+package product;
+
+service ProductService {
+     rpc FindOne(ProductById) returns (ProductResponse);
+     rpc UpdateOne(UpdateProductRequest) returns (ProductResponse);
+
+}
+
+message ProductById {
+  string productId = 1;
+}
+
+message ProductResponse {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string price = 4;
+  string stock = 5;
+  string category = 6;
+  bool isActive = 7;
+  string imageUrl = 8;
+}
+
+message UpdateProductRequest {
+  string id = 1;
+  string name = 2;
+  string description = 3;
+  string price = 4;
+  string stock = 5;
+  string category = 6;
+  bool isActive = 7;
+  string imageUrl = 8;
+}
