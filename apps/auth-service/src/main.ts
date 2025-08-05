@@ -2,6 +2,8 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { AllExceptionsFilter } from "@common/interceptors/http-exception.filter";
+import { ResponseInterceptor } from "@common/interceptors/response.interceptor";
 
 
 async function bootstrap() {
@@ -37,6 +39,8 @@ async function bootstrap() {
         customSiteTitle: 'Auth Service API Docs',
     });
     app.use('/auth-api-json', (req: any, res: any) => res.json(document)); // JSON
+    app.useGlobalInterceptors(new ResponseInterceptor());
+    app.useGlobalFilters(new AllExceptionsFilter());
 
     console.log("swagger created", document, "createddd")
     await app.startAllMicroservices();

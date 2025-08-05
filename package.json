@@ -5,6 +5,7 @@
   "devDependencies": {
     "@grpc/grpc-js": "^1.13.4",
     "@grpc/proto-loader": "^0.8.0",
+    "@types/express": "^5.0.3",
     "grpc_tools_node_protoc_ts": "^5.3.3",
     "grpc-tools": "^1.13.0",
     "protoc-gen-ts": "^0.8.7",
@@ -12,6 +13,7 @@
   },
   "dependencies": {
     "@nestjs/common": "^11.1.5",
+    "mongoose": "^8.17.0",
     "swagger-ui-express": "^5.0.1"
   }
 }

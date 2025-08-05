@@ -1,4 +1,4 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { Inject, Injectable, BadRequestException } from '@nestjs/common';
 import { Cart } from "./schemas/cart.schema"
 import { Order, OrderDocument } from "../order/schemas/order.schema"
 import { InjectModel } from '@nestjs/mongoose';
@@ -83,26 +83,25 @@ export class CartService {
         }
     }
 
-
-
-
-    async getCart(userId: number) {
-        return this.cartModel.findOne({ where: { userId } });
+    async getCart(userId: string) {
+        return this.cartModel.findOne({ userId: new mongoose.Types.ObjectId(userId) });
     }
 
-    async checkout(userId: number) {
-        const cart = await this.cartModel.findOne({ where: { userId } });
+    async checkout(userId: string) {
+        const cart = await this.cartModel.findOne({ userId: new mongoose.Types.ObjectId(userId) });
+
         if (!cart) return { message: 'Cart is empty' };
 
-        const totalAmount = cart.items.reduce((sum, item: any) => sum + item.quantity * item.price, 0);
+        const totalAmount = cart.totalPrice
+
         const order = await this.orderModel.create({
-            userId,
+            userId: new mongoose.Types.ObjectId(userId),
             items: cart.items,
             totalAmount,
-            status: 'Pending',
+            status: 'pending',
         });
+        await this.cartModel.updateOne({ userId: new mongoose.Types.ObjectId(userId) }, { $set: { items: [] } });
 
-        await this.cartModel.updateOne({ userId }, { $set: { items: [] } });
         return order;
     }
 }

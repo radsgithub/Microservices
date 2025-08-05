@@ -15,7 +15,12 @@
         "forceConsistentCasingInFileNames": true,
         "skipLibCheck": true,
         "useDefineForClassFields": false, // 🔥 VERY IMPORTANT
-        "outDir": "./dist"
+        "outDir": "./dist",
+        "paths": {
+            "@common/*": [
+                "../../libs/common/dist/*"
+            ]
+        }
     },
     "include": [
         "src/**/*.ts"

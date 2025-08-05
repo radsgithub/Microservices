@@ -6,6 +6,8 @@ import { AppModule } from "./app.module";
 import { MicroserviceOptions, Transport } from "@nestjs/microservices";
 import { join } from 'path';
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
+import { AllExceptionsFilter } from "@common/interceptors/http-exception.filter";
+import { ResponseInterceptor } from "@common/interceptors/response.interceptor";
 
 async function bootstrap() {
     const app = await NestFactory.create(AppModule);
@@ -35,6 +37,9 @@ async function bootstrap() {
         customSiteTitle: 'Products Service API Docs',
     });
     app.use('/products-api-json', (req: any, res: any) => res.json(document)); // JSON
+
+    app.useGlobalInterceptors(new ResponseInterceptor());
+    app.useGlobalFilters(new AllExceptionsFilter());
 
     await app.startAllMicroservices();
     await app.listen(3002); // REST API on port 3000

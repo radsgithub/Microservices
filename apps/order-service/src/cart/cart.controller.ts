@@ -19,12 +19,13 @@ export class CartController {
     // Get cart by user ID
     @Get(':userId')
     async getCart(@Param('userId') userId: string) {
-        return this.cartService.getCart(Number(userId));
+
+        return this.cartService.getCart(userId);
     }
 
     // Checkout
     @Post(':userId/checkout')
     async checkout(@Param('userId') userId: string) {
-        return this.cartService.checkout(Number(userId));
+        return this.cartService.checkout(userId);
     }
 }
