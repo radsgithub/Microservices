@@ -41,13 +41,4 @@ export class CreateUserDto {
         required: false,
     })
     phone!: string;
-
-    @ApiProperty({
-        example: 'Address',
-        description: 'Address of the user',
-        required: false,
-    })
-    address!: string
-
-
 }

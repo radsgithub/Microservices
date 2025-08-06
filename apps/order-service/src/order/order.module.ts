@@ -15,6 +15,15 @@ import { join } from 'path';
         options: {
           package: 'product',
           protoPath: join(__dirname, '../proto/product.proto'),
+          url: 'localhost:50052',
+        },
+      },
+      {
+        name: 'USER_SERVICE',
+        transport: Transport.GRPC,
+        options: {
+          package: 'user',
+          protoPath: join(__dirname, '../proto/user.proto'),
           url: 'localhost:50051',
         },
       },

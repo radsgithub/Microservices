@@ -4,6 +4,30 @@ import { Document } from 'mongoose';
 export type UserDocument = User & Document;
 
 @Schema()
+export class Address {
+    @Prop({ required: true })
+    street!: string;
+
+    @Prop()
+    apartment?: string;
+
+    @Prop({ required: true })
+    city!: string;
+
+    @Prop({ required: true })
+    state!: string;
+
+    @Prop({ required: true })
+    zipCode!: string;
+
+    @Prop({ required: true })
+    country!: string;
+
+    @Prop({ required: true })
+    label!: string;
+}
+
+@Schema()
 export class User {
     @Prop({ required: true, unique: true, type: String })
     email: string | undefined;
@@ -28,8 +52,8 @@ export class User {
     @Prop({ type: String })
     profileImage!: string;
 
-    @Prop({ type: String })
-    address!: string
+    @Prop({ type: [Address], default: [] })
+    addresses!: Address[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

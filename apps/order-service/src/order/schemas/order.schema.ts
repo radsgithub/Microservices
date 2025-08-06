@@ -12,11 +12,19 @@ export class Order {
         {
             productId: { type: Types.ObjectId, ref: 'Product', required: true },
             quantity: { type: Number, required: true },
+            totalPrice: { type: Number, required: true },
+            name: { type: String, required: true },
+            price: { type: String, required: true },
+            stock: { type: Number, required: true },
         },
     ])
     items!: {
         productId: Types.ObjectId;
         quantity: number;
+        totalPrice: number;
+        name: string;
+        price: string;
+        stock: number;
     }[];
 
     @Prop({ type: Number, required: true })

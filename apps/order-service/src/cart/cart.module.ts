@@ -20,6 +20,15 @@ import { join } from 'path';
           url: 'localhost:50052',
         },
       },
+      {
+        name: 'USER_SERVICE',
+        transport: Transport.GRPC,
+        options: {
+          package: 'user',
+          protoPath: join(__dirname, '../proto/user.proto'),
+          url: 'localhost:50051',
+        },
+      },
     ]),
     MongooseModule.forFeature([{ name: Cart.name, schema: CartSchema }, { name: Order.name, schema: OrderSchema }]),
   ],

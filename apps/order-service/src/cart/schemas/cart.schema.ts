@@ -12,11 +12,13 @@ export class Cart {
         {
             productId: { type: Types.ObjectId, ref: 'Product', required: true },
             quantity: { type: Number, required: true },
+
         },
     ])
     items!: {
         productId: Types.ObjectId;
         quantity: number;
+
     }[];
 
     @Prop({ type: Number, default: 0 })

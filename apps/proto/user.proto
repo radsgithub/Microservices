@@ -6,7 +6,10 @@ service UserService {
   rpc CreateUser(CreateUserRequest) returns (UserResponse);
   rpc FindOne(UserById) returns (UserResponse);
   rpc FindUser (FindUserRequest) returns (LoginUserResponse);
-
+  rpc AddAddress(AddAddressRequest) returns (UserResponse);
+  rpc UpdateAddress(UpdateAddressRequest) returns (UserResponse);
+  rpc GetAddresses(GetAddressesRequest) returns (AddressesResponse);
+  rpc DeleteAddress(DeleteAddressRequest) returns (UserResponse);
 }
 
 message CreateUserRequest {
@@ -21,7 +24,7 @@ message CreateUserRequest {
 }
 
 message UserById {
-  string id = 1;
+  string _id = 1;
 }
 
 message UserResponse {
@@ -33,8 +36,42 @@ message UserResponse {
   string role = 6;
   bool isActive = 7;
   string profileImage = 8;
+  repeated Address addresses = 9;
 }
 
+message Address {
+  string street = 1;
+  string apartment = 2;
+  string city = 3;
+  string state = 4;
+  string zipCode = 5;
+  string country = 6;
+  string label = 7;
+}
+
+message AddAddressRequest {
+  string userId = 1;
+  Address address = 2;
+}
+
+message UpdateAddressRequest {
+  string userId = 1;
+  Address address = 2;
+  int32 addressIndex = 3;
+}
+
+message GetAddressesRequest {
+  string userId = 1;
+}
+
+message AddressesResponse {
+  repeated Address addresses = 1;
+}
+
+message DeleteAddressRequest {
+  string userId = 1;
+  int32 addressIndex = 2;
+}
 
 message LoginUserResponse {
   string id = 1;
@@ -46,6 +83,7 @@ message LoginUserResponse {
   bool isActive = 7;
   string profileImage = 8;
   string password = 9;
+  repeated Address addresses = 10;
 }
 
 message FindUserRequest {

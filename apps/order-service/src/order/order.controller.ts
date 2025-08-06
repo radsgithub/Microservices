@@ -29,23 +29,5 @@ export class OrderController {
         return this.orderService.updateOrderStatus(id, body);
     }
 
-    @Post('test-validation')
-    async testValidation(@Body() orderData: any) {
-        // This will trigger validation error if status is invalid
-        const order = new this.orderModel(orderData);
-        return await order.save();
-    }
 
-    @Post('test-error')
-    async testError() {
-        // Create an order with invalid status to test exception filter
-        const order = new this.orderModel({
-            userId: '507f1f77bcf86cd799439011',
-            items: [{ productId: '507f1f77bcf86cd799439012', quantity: 2 }],
-            totalAmount: 100,
-            status: 'InvalidStatus', // This should trigger validation error
-            paymentMethod: 'credit_card'
-        });
-        return await order.save();
-    }
 }
