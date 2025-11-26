@@ -1,0 +1,61 @@
+import { Product } from '../types';
+
+// In-memory database - In production, this would be replaced with a real database
+export const products: Product[] = [
+  {
+    id: '1',
+    name: 'Smartphone',
+    price: 699,
+    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9',
+    category: 'electronics',
+    description: 'Latest smartphone with advanced features',
+    stock: 50,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '2',
+    name: 'Laptop',
+    price: 1299,
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8',
+    category: 'electronics',
+    description: 'High-performance laptop for work and play',
+    stock: 30,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '3',
+    name: "Women's Dress",
+    price: 89,
+    image: 'https://images.unsplash.com/photo-1512436991641-6745cdb1723f',
+    category: 'clothing',
+    description: 'Elegant dress for any occasion',
+    stock: 100,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '4',
+    name: 'Wooden Chair',
+    price: 129,
+    image: 'https://images.unsplash.com/photo-1524758631624-e2822e304c36',
+    category: 'home',
+    description: 'Comfortable wooden chair for your home',
+    stock: 75,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: '5',
+    name: 'Ceramic Mug',
+    price: 19,
+    image: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93',
+    category: 'home',
+    description: 'Beautiful ceramic mug for your morning coffee',
+    stock: 200,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
+
