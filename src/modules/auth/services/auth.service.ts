@@ -1,5 +1,5 @@
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import { User } from '../../users/models/User.model';
 import { config } from '../../../config/env';
 import { AppError } from '../../../middleware/errorHandler';
@@ -50,15 +50,12 @@ export class AuthService {
     });
 
     // Generate JWT token
-    const token = jwt.sign(
-      {
-        userId: user._id.toString(),
-        email: user.email,
-        role: user.role,
-      },
-      config.jwtSecret,
-      { expiresIn: config.jwtExpiresIn }
-    );
+    const payload = {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    };
+    const token = jwt.sign(payload, config.jwtSecret as string, { expiresIn: config.jwtExpiresIn } as SignOptions);
 
     return {
       token,
@@ -87,15 +84,12 @@ export class AuthService {
     }
 
     // Generate JWT token
-    const token = jwt.sign(
-      {
-        userId: user._id.toString(),
-        email: user.email,
-        role: user.role,
-      },
-      config.jwtSecret,
-      { expiresIn: config.jwtExpiresIn }
-    );
+    const payload = {
+      userId: user._id.toString(),
+      email: user.email,
+      role: user.role,
+    };
+    const token = jwt.sign(payload, config.jwtSecret as string, { expiresIn: config.jwtExpiresIn } as SignOptions);
 
     return {
       token,

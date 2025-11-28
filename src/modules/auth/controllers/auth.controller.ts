@@ -18,7 +18,7 @@ export class AuthController {
       const result = await authService.register(data);
 
       res.status(201).json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -40,7 +40,7 @@ export class AuthController {
       const result = await authService.login(data);
 
       res.status(200).json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(401).json({ error: error.message });
         return;

@@ -30,7 +30,7 @@ export class OrderController {
       });
 
       res.status(201).json(order);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -50,7 +50,7 @@ export class OrderController {
       const order = await orderService.getOrder(req.user.userId, id);
 
       res.status(200).json(order);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;

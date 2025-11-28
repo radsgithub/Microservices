@@ -33,7 +33,7 @@ export class AIController {
         recommendedQty: prediction.aiOutput.recommendedQty,
         predictionId: prediction._id,
       });
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -67,7 +67,7 @@ export class AIController {
       const prediction = await aiService.getPredictionById(req.user.userId, id);
 
       res.status(200).json(prediction);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;

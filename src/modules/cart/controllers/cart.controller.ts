@@ -42,7 +42,7 @@ export class CartController {
       });
 
       res.status(200).json(cart);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -62,7 +62,7 @@ export class CartController {
       const cart = await cartService.updateCartItem(req.user.userId, itemId, req.body);
 
       res.status(200).json(cart);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;
@@ -82,7 +82,7 @@ export class CartController {
       const cart = await cartService.removeCartItem(req.user.userId, itemId);
 
       res.status(200).json(cart);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;

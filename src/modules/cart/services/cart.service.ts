@@ -95,7 +95,7 @@ export class CartService {
       throw new AppError('Cart not found');
     }
 
-    const itemIndex = cart.items.findIndex((item) => item._id?.toString() === itemId);
+    const itemIndex = cart.items.findIndex((item: any) => item._id?.toString() === itemId);
     if (itemIndex === -1) {
       throw new AppError('Cart item not found');
     }
@@ -139,7 +139,7 @@ export class CartService {
       throw new AppError('Cart not found');
     }
 
-    const itemIndex = cart.items.findIndex((item) => item._id?.toString() === itemId);
+    const itemIndex = cart.items.findIndex((item: any) => item._id?.toString() === itemId);
     if (itemIndex === -1) {
       throw new AppError('Cart item not found');
     }

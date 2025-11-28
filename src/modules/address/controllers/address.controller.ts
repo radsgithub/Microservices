@@ -31,7 +31,7 @@ export class AddressController {
       });
 
       res.status(201).json(address);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -65,7 +65,7 @@ export class AddressController {
       const address = await addressService.updateAddress(req.user.userId, id, req.body);
 
       res.status(200).json(address);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;
@@ -85,7 +85,7 @@ export class AddressController {
       const result = await addressService.deleteAddress(req.user.userId, id);
 
       res.status(200).json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;

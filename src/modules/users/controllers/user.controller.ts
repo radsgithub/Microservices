@@ -15,7 +15,7 @@ export class UserController {
 
       const user = await userService.getProfile(req.user.userId);
       res.status(200).json(user);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;
@@ -35,7 +35,7 @@ export class UserController {
       const user = await userService.updateProfile(req.user.userId, { name, phone });
 
       res.status(200).json(user);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(404).json({ error: error.message });
         return;

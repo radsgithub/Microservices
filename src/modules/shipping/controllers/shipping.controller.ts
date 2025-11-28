@@ -27,7 +27,7 @@ export class ShippingController {
 
       const rate = await shippingService.getRate(rateData);
       res.status(200).json(rate);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -58,7 +58,7 @@ export class ShippingController {
 
       const result = await shippingService.bookShipment(req.user.userId, orderId, bookingData);
       res.status(200).json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -78,7 +78,7 @@ export class ShippingController {
 
       const tracking = await shippingService.trackShipment(trackingNumber);
       res.status(200).json(tracking);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;

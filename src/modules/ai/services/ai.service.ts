@@ -1,4 +1,4 @@
-import { AIRequestLog, IAIOutput } from '../models/AIRequestLog.model';
+import { AIRequestLog, IAIOutput, IAIRequestLog } from '../models/AIRequestLog.model';
 import { Product } from '../../products/models/Product.model';
 import { AppError } from '../../../middleware/errorHandler';
 import mongoose from 'mongoose';

@@ -30,7 +30,7 @@ export class PaymentController {
       });
 
       res.status(200).json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -59,7 +59,7 @@ export class PaymentController {
       });
 
       res.status(200).json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;
@@ -74,7 +74,7 @@ export class PaymentController {
       const result = await paymentService.handleWebhook(req.body);
 
       res.status(200).json(result);
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof AppError) {
         res.status(400).json({ error: error.message });
         return;

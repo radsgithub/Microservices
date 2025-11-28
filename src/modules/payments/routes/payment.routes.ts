@@ -11,7 +11,7 @@ router.post('/create-mandate', authMiddleware, (req, res, next) =>
 router.post('/create-order-payment', authMiddleware, (req, res, next) =>
   paymentController.createOrderPayment(req as any, res, next)
 );
-router.post('/webhooks', (req, res, next) => paymentController.handleWebhook(req, res, next));
+router.post('/webhooks', (req, res, next) => paymentController.handleWebhook(req as any, res, next));
 
 export default router;
 
