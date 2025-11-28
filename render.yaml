@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: ecommerce-backend
+    env: node
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      # PORT will be automatically assigned by Render
+      # Add your other environment variables in Render dashboard:
+      # - MONGODB_URI
+      # - JWT_SECRET
+      # - CORS_ORIGIN
+      # - PARCEL2GO_API_KEY (optional)
+      # - GOCARDLESS_ACCESS_TOKEN (optional)
+
