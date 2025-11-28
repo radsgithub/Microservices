@@ -26,7 +26,7 @@ async function predictSizeAndRecommendations(
 
   // Enhanced size prediction using multiple factors
   let predictedSize = 'M'; // Default
-  
+
   // Factor 1: Height-based prediction
   if (height < 155) {
     predictedSize = 'S';
@@ -47,10 +47,10 @@ async function predictSizeAndRecommendations(
     const waist = measurements.waist || 0;
     const bust = measurements.bust || 0;
     const hips = measurements.hips || 0;
-    
+
     // Average measurements for better accuracy
     const avgMeasurement = (waist + bust + hips) / 3;
-    
+
     if (avgMeasurement > 0) {
       if (avgMeasurement < 75) {
         predictedSize = 'S';
@@ -64,7 +64,7 @@ async function predictSizeAndRecommendations(
         predictedSize = 'XXL';
       }
     }
-    
+
     // Waist-specific adjustment (most important for fit)
     if (measurements.waist) {
       if (measurements.waist < 65) predictedSize = 'S';
@@ -121,7 +121,7 @@ async function predictSizeAndRecommendations(
 
   // Define style-specific color keywords
   let styleKeywords: string[] = [];
-  
+
   if (style === 'modest' || style === 'classic') {
     // Modest/Classic: Prefer neutral, professional colors
     styleKeywords = ['black', 'navy', 'beige', 'white', 'gray', 'grey', 'brown', 'burgundy', 'maroon', 'tan', 'khaki', 'cream', 'ivory', 'charcoal', 'slate', 'muted', 'soft'];
@@ -141,17 +141,22 @@ async function predictSizeAndRecommendations(
 
   // Score and sort colors by relevance to style
   if (styleKeywords.length > 0) {
-    const colorScores = availableColors.map((color: string) => ({
+    interface ColorScore {
+      color: string;
+      score: number;
+    }
+
+    const colorScores: ColorScore[] = availableColors.map((color: string) => ({
       color,
       score: getColorScore(color, styleKeywords),
     }));
-    
+
     // Sort by score (highest first) and filter out zero scores
-    colorScores.sort((a, b) => b.score - a.score);
+    colorScores.sort((a: ColorScore, b: ColorScore) => b.score - a.score);
     recommendedColors = colorScores
-      .filter(item => item.score > 0)
-      .map(item => item.color);
-    
+      .filter((item: ColorScore) => item.score > 0)
+      .map((item: ColorScore) => item.color);
+
     // If we have matches, use them; otherwise fall through to secondary logic
     if (recommendedColors.length === 0) {
       // Secondary matching: exclude opposite style colors
@@ -181,7 +186,7 @@ async function predictSizeAndRecommendations(
 
   // Limit to top 5 recommendations, prioritizing by style relevance
   recommendedColors = recommendedColors.slice(0, 5);
-  
+
   // Final fallback: if still empty, use first available color
   if (recommendedColors.length === 0 && availableColors.length > 0) {
     recommendedColors = [availableColors[0]];
