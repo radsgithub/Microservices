@@ -17,8 +17,28 @@ import shippingRoutes from './modules/shipping/routes/shipping.routes';
 
 const app: Application = express();
 
-// Middleware
-app.use(cors({ origin: config.corsOrigin }));
+// Middleware - CORS configuration
+const corsOptions = {
+  origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Parse CORS_ORIGIN - can be comma-separated list
+    const allowedOrigins = config.corsOrigin.split(',').map((o) => o.trim());
+
+    if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
