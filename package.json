@@ -7,6 +7,7 @@
     "dev": "ts-node-dev --respawn --transpile-only src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
+    "postinstall": "npm run build || yarn build || echo 'Build skipped'",
     "lint": "eslint src/**/*.ts",
     "create-admin": "ts-node scripts/create-admin.ts",
     "add-products": "ts-node scripts/add-products.ts",
