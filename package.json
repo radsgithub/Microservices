@@ -11,6 +11,7 @@
     "lint": "eslint src/**/*.ts",
     "create-admin": "ts-node scripts/create-admin.ts",
     "add-products": "ts-node scripts/add-products.ts",
+    "add-fabric": "ts-node scripts/add-fabric-inventory.ts",
     "update-order": "ts-node scripts/update-order-status.ts",
     "book-shipment": "ts-node scripts/book-shipment.ts"
   },

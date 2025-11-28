@@ -72,5 +72,19 @@ export class OrderController {
       next(error);
     }
   }
+
+  async getPendingOrders(req: AuthRequest, res: Response, next: NextFunction): Promise<void> {
+    try {
+      if (!req.user || req.user.role !== 'admin') {
+        res.status(403).json({ error: 'Admin access required' });
+        return;
+      }
+
+      const orders = await orderService.getPendingOrders();
+      res.status(200).json(orders);
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 

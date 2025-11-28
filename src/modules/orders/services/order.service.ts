@@ -122,6 +122,17 @@ export class OrderService {
       .sort({ createdAt: -1 });
   }
 
+  async getPendingOrders() {
+    return await Order.find({
+      orderStatus: 'pending',
+      paymentStatus: 'paid',
+    })
+      .populate('items.productId')
+      .populate('shippingAddressId')
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 });
+  }
+
   async updateOrderStatus(
     orderId: string,
     updates: {

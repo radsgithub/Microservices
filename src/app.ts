@@ -14,6 +14,7 @@ import aiRoutes from './modules/ai/routes/ai.routes';
 import orderRoutes from './modules/orders/routes/order.routes';
 import paymentRoutes from './modules/payments/routes/payment.routes';
 import shippingRoutes from './modules/shipping/routes/shipping.routes';
+import productionRoutes from './modules/production/routes/production.routes';
 
 const app: Application = express();
 
@@ -88,6 +89,7 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/order', orderRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/shipping', shippingRoutes);
+app.use('/api/production', productionRoutes);
 
 // Error handling
 app.use(notFoundHandler);
