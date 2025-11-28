@@ -20,19 +20,39 @@ const app: Application = express();
 // Middleware - CORS configuration
 const corsOptions = {
   origin: (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
+    // Log for debugging
+    logger.info(`CORS check - Origin: ${origin || 'no origin'}, CORS_ORIGIN env: ${config.corsOrigin}`);
+
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) {
+      logger.info('CORS: Allowing request with no origin');
       return callback(null, true);
     }
 
     // Parse CORS_ORIGIN - can be comma-separated list
-    const allowedOrigins = config.corsOrigin.split(',').map((o) => o.trim());
+    const allowedOrigins = config.corsOrigin.split(',').map((o) => o.trim()).filter((o) => o.length > 0);
 
+    logger.info(`CORS: Allowed origins: ${JSON.stringify(allowedOrigins)}`);
+
+    // Check if origin matches (exact match or wildcard)
     if (allowedOrigins.includes(origin) || allowedOrigins.includes('*')) {
+      logger.info(`CORS: Allowing origin: ${origin}`);
       callback(null, true);
     } else {
-      logger.warn(`CORS blocked origin: ${origin}. Allowed: ${allowedOrigins.join(', ')}`);
-      callback(new Error('Not allowed by CORS'));
+      // Also check if origin matches without trailing slash
+      const originNoSlash = origin.endsWith('/') ? origin.slice(0, -1) : origin;
+      const matched = allowedOrigins.some(allowed => {
+        const allowedNoSlash = allowed.endsWith('/') ? allowed.slice(0, -1) : allowed;
+        return originNoSlash === allowedNoSlash;
+      });
+
+      if (matched) {
+        logger.info(`CORS: Allowing origin (after slash normalization): ${origin}`);
+        callback(null, true);
+      } else {
+        logger.warn(`CORS: BLOCKED origin: ${origin}. Allowed origins: ${allowedOrigins.join(', ')}`);
+        callback(new Error('Not allowed by CORS'));
+      }
     }
   },
   credentials: true,
