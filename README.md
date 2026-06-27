@@ -1,134 +1,64 @@
-# E-commerce Backend API
+# E-commerce Monolith
 
-Backend application for e-commerce website with Express.js, TypeScript, MongoDB, JWT Authentication, and GoCardless payment integration.
+A **monolithic** NestJS app converted from the microservices under `../apps`.
+Everything that used to be a separate service now runs in one process, on one
+port, against one database.
 
-## Features
+## Run
 
-- ✅ User Authentication (JWT)
-- ✅ Product Management
-- ✅ Shopping Cart
-- ✅ Order Management
-- ✅ Address Management
-- ✅ AI Module for size prediction and recommendations (placeholder)
-- ✅ GoCardless Payment Integration
-- ✅ Webhook support for payment status updates
-
-## Tech Stack
-
-- **Express.js** (TypeScript)
-- **MongoDB** + **Mongoose**
-- **JWT** Authentication
-- **GoCardless API** for payments
-- **bcryptjs** for password hashing
-
-## Setup
-
-1. Install dependencies:
 ```bash
 npm install
+# needs MongoDB — defaults to mongodb://localhost:27017/ecommerce-monolith (edit .env)
+npm run start:dev      # watch mode
+# or
+npm run build && npm run start:prod
 ```
 
-2. Create a `.env` file in the root directory:
-```env
-PORT=3001
-NODE_ENV=development
-MONGODB_URI=mongodb://localhost:27017/ecommerce
-JWT_SECRET=your-super-secret-jwt-key-change-this-in-production
-JWT_EXPIRES_IN=7d
-GOCARDLESS_ACCESS_TOKEN=your-gocardless-access-token
-GOCARDLESS_ENVIRONMENT=sandbox
-CORS_ORIGIN=http://localhost:3000
-```
+- API:       http://localhost:8002
+- Swagger:   http://localhost:8002/api-docs
 
-3. Start MongoDB (if running locally):
-```bash
-mongod
-```
+## What changed vs. the microservices
 
-4. Run the development server:
-```bash
-npm run dev
-```
+| Microservices | Monolith |
+|---|---|
+| 6 services + api-gateway, each on its own port | 1 NestJS app on port 8002 |
+| Per-service DBs (auth-db, user-db, product-db, order-db) | 1 database (`MONGO_URI`) |
+| **gRPC** auth → user (`CreateUser`/`FindUser`) | `AuthService` injects `UserService` and calls it directly |
+| **gRPC** order/cart → product, user (`FindOne`) | `OrderService`/`CartService` inject `ProductService` + `UserService` |
+| **Kafka** auth → notification (`user-login`) | `AuthService` calls `NotificationService.handleUserLogin()` in-process |
+| api-gateway aggregates per-service Swagger | one unified Swagger doc |
+| `@common/*` shared lib (compiled) | `src/common/*` (source) |
 
-5. Build for production:
-```bash
-npm run build
-npm start
-```
+The `.proto` files, `@nestjs/microservices`, `kafkajs`, `@grpc/*`,
+`docker-compose.yml`, `nginx`, and the `start-all.sh` scripts are no longer
+needed and are not part of this folder.
 
-## API Endpoints
-
-### Authentication
-- `POST /api/auth/register` - Register new user
-- `POST /api/auth/login` - Login user
-
-### User
-- `GET /api/user/profile` - Get user profile (protected)
-- `PUT /api/user/update` - Update user profile (protected)
-
-### Address
-- `POST /api/address/add` - Add address (protected)
-- `GET /api/address/list` - List user addresses (protected)
-- `PUT /api/address/update/:id` - Update address (protected)
-- `DELETE /api/address/:id` - Delete address (protected)
-
-### Products
-- `GET /api/products` - Get all products (public)
-- `GET /api/products/:id` - Get product by ID (public)
-- `POST /api/products` - Create product (admin only)
-- `PUT /api/products/:id` - Update product (admin only)
-- `DELETE /api/products/:id` - Delete product (admin only)
-
-### Cart
-- `GET /api/cart` - Get user cart (protected)
-- `POST /api/cart/add` - Add item to cart (protected)
-- `PUT /api/cart/update/:itemId` - Update cart item (protected)
-- `DELETE /api/cart/remove/:itemId` - Remove cart item (protected)
-
-### AI
-- `POST /api/ai/predict` - Get AI predictions (protected)
-- `GET /api/ai/history` - Get prediction history (protected)
-- `GET /api/ai/:id` - Get prediction by ID (protected)
-
-### Orders
-- `POST /api/order/create` - Create order (protected)
-- `GET /api/order/:id` - Get order by ID (protected)
-- `GET /api/order/my` - Get user orders (protected)
-
-### Payments
-- `POST /api/payments/create-mandate` - Create GoCardless mandate (protected)
-- `POST /api/payments/create-order-payment` - Create payment for order (protected)
-- `POST /api/payments/webhooks` - GoCardless webhook handler
-
-## Project Structure
+## Structure
 
 ```
 src/
-  config/
-    db.ts              # MongoDB connection
-    gocardless.ts      # GoCardless client
-    env.ts             # Environment configuration
+  main.ts                # single bootstrap: CORS, ValidationPipe, interceptor, filter, Swagger
+  app.module.ts          # ConfigModule + single MongooseModule.forRoot + all feature modules
+  common/interceptors/   # ResponseInterceptor + AllExceptionsFilter (from libs/common)
   modules/
-    auth/              # Authentication module
-    users/             # User management
-    products/          # Product management
-    cart/              # Shopping cart
-    orders/            # Order management
-    payments/          # Payment processing
-    ai/                # AI predictions
-    address/           # Address management
-  middleware/
-    auth.ts            # JWT authentication middleware
-    errorHandler.ts    # Error handling middleware
-  utils/
-    logger.ts          # Logging utility
-  app.ts               # Express app setup
-  server.ts            # Server entry point
+    auth/                # /auth/register, /auth/login, /auth/validate
+    user/                # /users/:id (+ addresses)   ← was root-path gRPC service
+    product/             # /products
+    order/               # /orders
+    cart/                # /cart
+    notification/        # in-process NotificationService (was Kafka consumer)
 ```
 
-## Notes
+## Notes / behavior changes
 
-- The AI module currently uses placeholder logic. Replace the `predictSizeAndRecommendations` function in `src/modules/ai/services/ai.service.ts` with your actual AI/ML model.
-- GoCardless integration requires valid credentials. Set up your GoCardless account and configure the access token in `.env`.
-- All protected routes require a JWT token in the `Authorization` header: `Bearer <token>`
-
+- **User REST routes are now under `/users`** (the microservice used the root
+  path because it had its own port; namespacing avoids route collisions).
+- **The gRPC `@GrpcMethod` handlers were removed** — callers use the services
+  directly, so they were redundant.
+- **A global `ValidationPipe` is now enabled** in `main.ts`. The microservices
+  declared `class-validator` DTOs but never wired a pipe, so validation was not
+  actually enforced; the monolith enforces it. Remove the `useGlobalPipes` line
+  in `main.ts` if you want the old (unvalidated) behavior.
+- `cart.checkout` now uses `UserService.findById` (the old gRPC client called a
+  `findById` rpc that didn't exist in the proto).
+```
