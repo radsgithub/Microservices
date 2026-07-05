@@ -9,6 +9,7 @@ import { CheckoutController } from './checkout.controller';
 import { WebhookService } from './webhook.service';
 import { WebhooksController } from './webhooks.controller';
 import { RefundService } from './refund.service';
+import { ReconciliationService } from './reconciliation.service';
 import { AdminController } from './admin.controller';
 import { OrderModule } from '../order/order.module';
 import { PrintifyModule } from '../printify/printify.module';
@@ -24,7 +25,7 @@ import { PrintifyModule } from '../printify/printify.module';
         ]),
     ],
     controllers: [CheckoutController, WebhooksController, AdminController],
-    providers: [StripeService, CheckoutService, WebhookService, RefundService],
+    providers: [StripeService, CheckoutService, WebhookService, RefundService, ReconciliationService],
     exports: [StripeService, MongooseModule],
 })
 export class PaymentsModule { }

@@ -26,6 +26,26 @@ export class RefundService {
 
         const order = await this.orderModel.findById(orderId);
         if (!order) throw new NotFoundException('Order not found');
+
+        return this.issueRefund(order, amountCents, reason, adminUserId);
+    }
+
+    // Automatic (system) refund on an already-loaded order — no admin context.
+    // Refunds the full remaining balance. Used by the reconciliation job when
+    // Printify has canceled an order the customer already paid for.
+    async systemRefund(order: OrderDocument, reason: string) {
+        return this.issueRefund(order, undefined, reason, 'system');
+    }
+
+    // Shared core. Issues the Stripe refund, records it, and updates the order.
+    // `issuedBy` is an admin user id, or 'system' for automatic refunds.
+    private async issueRefund(
+        order: OrderDocument,
+        amountCents: number | undefined,
+        reason: string | undefined,
+        issuedBy: string,
+    ) {
+        const orderId = order._id.toString();
         if (!order.stripePaymentIntentId) throw new BadRequestException('Order has no payment.');
         if (!['captured', 'partially_refunded'].includes(order.paymentStatus)) {
             throw new BadRequestException('This order has no captured payment to refund.');
@@ -56,7 +76,7 @@ export class RefundService {
             currency: order.currency,
             reason,
             status: stripeRefund.status === 'succeeded' ? 'succeeded' : 'pending',
-            issuedBy: adminUserId,
+            issuedBy,
         });
 
         // Update the order totals + status.
@@ -79,9 +99,9 @@ export class RefundService {
 
         await this.audit.log({
             action: 'refund.issued',
-            message: `Refund ${amount} ${order.currency} on order ${orderId} by admin ${adminUserId} (total refunded ${newRefunded})`,
+            message: `Refund ${amount} ${order.currency} on order ${orderId} by ${issuedBy} (total refunded ${newRefunded})`,
             orderId,
-            userId: adminUserId,
+            userId: issuedBy,
             meta: { amount, reason, stripeRefundId: stripeRefund.id, newRefunded },
         });
 
