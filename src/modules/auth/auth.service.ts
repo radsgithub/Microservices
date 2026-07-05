@@ -5,6 +5,7 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { UserService } from '../user/user.service';
 import { NotificationService } from '../notification/notification.service';
+import { getJwtSecret } from '../../common/config/env';
 
 @Injectable()
 export class AuthService {
@@ -14,7 +15,7 @@ export class AuthService {
     ) { }
 
     private signToken(userId: string): string {
-        return jwt.sign({ sub: userId }, process.env.JWT_SECRET || 'secret123', {
+        return jwt.sign({ sub: userId }, getJwtSecret(), {
             expiresIn: '1d',
         });
     }

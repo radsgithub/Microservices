@@ -7,7 +7,9 @@ import { ResponseInterceptor } from './common/interceptors/response.interceptor'
 import { AllExceptionsFilter } from './common/interceptors/http-exception.filter';
 
 async function bootstrap() {
-    const app = await NestFactory.create(AppModule);
+    // rawBody:true keeps the raw request buffer (req.rawBody) so webhook
+    // signature verification (Stripe/Printify) can validate the exact bytes.
+    const app = await NestFactory.create(AppModule, { rawBody: true });
     app.enableCors();
 
     // Validation for all incoming DTOs (the microservices defined these DTOs

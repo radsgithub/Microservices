@@ -5,6 +5,7 @@ import {
     UnauthorizedException,
 } from '@nestjs/common';
 import * as jwt from 'jsonwebtoken';
+import { getJwtSecret } from '../config/env';
 
 // Minimal JWT guard. Verifies the Bearer token issued by AuthService and
 // attaches the user id to the request as `req.userId`.
@@ -20,7 +21,7 @@ export class JwtAuthGuard implements CanActivate {
 
         const token = header.slice(7);
         try {
-            const payload = jwt.verify(token, process.env.JWT_SECRET || 'secret123') as {
+            const payload = jwt.verify(token, getJwtSecret()) as {
                 sub: string;
             };
             request.userId = payload.sub;
