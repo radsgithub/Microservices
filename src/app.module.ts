@@ -12,6 +12,8 @@ import { ShippingModule } from './modules/shipping/shipping.module';
 import { NotificationModule } from './modules/notification/notification.module';
 import { requireEnv } from './common/config/env';
 
+import { AppController } from './app.controller';
+
 @Module({
     imports: [
         ConfigModule.forRoot({
@@ -36,5 +38,6 @@ import { requireEnv } from './common/config/env';
         ShippingModule,
         NotificationModule,
     ],
+    controllers: [AppController],
 })
 export class AppModule { }
