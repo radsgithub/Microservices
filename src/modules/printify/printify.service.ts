@@ -124,6 +124,39 @@ export class PrintifyService {
         return { lines, subtotalCents };
     }
 
+    async calculateShippingCost(
+        lineItems: { product_id: string; variant_id: number; quantity: number }[],
+        addressTo: PrintifyAddressTo,
+    ): Promise<number> {
+        try {
+            const res = await this.api<any>(
+                `/shops/${this.shopId()}/orders/shipping.json`,
+                {
+                    method: 'POST',
+                    body: {
+                        line_items: lineItems,
+                        address_to: addressTo,
+                    },
+                },
+            );
+            console.log('[Printify Shipping API Response]:', JSON.stringify(res));
+
+            // Printify can return an object { standard: 450 } or a list of options
+            if (typeof res?.standard === 'number') {
+                return res.standard;
+            }
+            if (Array.isArray(res) && res.length > 0) {
+                const std = res.find((s: any) => s.type === 'standard' || s.id === 'standard') || res[0];
+                if (typeof std?.cost === 'number') return std.cost;
+                if (typeof std?.price === 'number') return std.price;
+            }
+            return 0;
+        } catch (err: any) {
+            console.error('[Printify Shipping API Error]:', err?.message || err);
+            return 0;
+        }
+    }
+
     async createOrder(input: {
         external_id: string;
         label?: string;

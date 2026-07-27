@@ -26,8 +26,27 @@ export class CheckoutService {
     // atomically. Returns the client secret for the browser to confirm.
     async start(userId: string, dto: CheckoutDto) {
         const priced = await this.printify.priceOrder(dto.items);
+        const printifyAddress = dto.shipping ? {
+            first_name: dto.shipping.firstName || 'Valued',
+            last_name: dto.shipping.lastName || 'Customer',
+            email: dto.shipping.email,
+            country: dto.shipping.country,
+            region: dto.shipping.region,
+            address1: dto.shipping.address1,
+            address2: dto.shipping.address2 || undefined,
+            city: dto.shipping.city,
+            zip: dto.shipping.zip,
+            phone: '',
+        } : undefined;
+
+        const shippingCents = printifyAddress
+            ? await this.printify.calculateShippingCost(
+                dto.items.map((i) => ({ product_id: i.productId, variant_id: i.variantId, quantity: i.quantity })),
+                printifyAddress,
+            )
+            : 0;
+
         const currency = process.env.STORE_CURRENCY || 'USD';
-        const shippingCents = 0; // retail price already covers shipping
         const totalCents = priced.subtotalCents + shippingCents;
         if (totalCents <= 0) throw new BadRequestException('Cart total is zero.');
 
@@ -92,7 +111,7 @@ export class CheckoutService {
             meta: { paymentIntentId: intent.id, totalCents, currency },
         });
 
-        return { orderId, clientSecret: intent.client_secret, amountCents: totalCents, currency };
+        return { orderId, clientSecret: intent.client_secret, amountCents: totalCents, shippingCents, currency };
     }
 
     // STEP 2 — confirm (browser path). Delegates to the shared, idempotent
