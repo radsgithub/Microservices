@@ -62,7 +62,7 @@ export class ShippingAddress {
     @Prop({ type: String, required: true }) firstName!: string;
     @Prop({ type: String, required: true }) lastName!: string;
     @Prop({ type: String, required: true }) email!: string;
-    @Prop({ type: String, required: true }) phone!: string;
+    @Prop({ type: String }) phone?: string;
     @Prop({ type: String, required: true }) address1!: string;
     @Prop({ type: String }) address2?: string;
     @Prop({ type: String, required: true }) city!: string;

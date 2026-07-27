@@ -19,7 +19,7 @@ export class ShippingDto {
     @IsString() @IsNotEmpty() firstName!: string;
     @IsString() @IsNotEmpty() lastName!: string;
     @IsString() @IsNotEmpty() email!: string;
-    @IsString() @IsNotEmpty() phone!: string;
+    @IsOptional() @IsString() phone?: string;
     @IsString() @IsNotEmpty() address1!: string;
     @IsOptional() @IsString() address2?: string;
     @IsString() @IsNotEmpty() city!: string;

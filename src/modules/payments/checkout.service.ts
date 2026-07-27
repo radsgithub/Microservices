@@ -35,6 +35,17 @@ export class CheckoutService {
             amountCents: totalCents,
             currency,
             metadata: { userId },
+            shipping: dto.shipping ? {
+                name: `${dto.shipping.firstName || ''} ${dto.shipping.lastName || ''}`.trim() || 'Customer',
+                address: {
+                    line1: dto.shipping.address1,
+                    line2: dto.shipping.address2 || undefined,
+                    city: dto.shipping.city,
+                    state: dto.shipping.region,
+                    postal_code: dto.shipping.zip,
+                    country: dto.shipping.country,
+                },
+            } : undefined,
         });
 
         const session = await this.connection.startSession();

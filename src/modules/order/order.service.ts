@@ -31,7 +31,7 @@ export interface CreateOrderData {
         firstName: string;
         lastName: string;
         email: string;
-        phone: string;
+        phone?: string;
         address1: string;
         address2?: string;
         city: string;

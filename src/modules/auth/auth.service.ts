@@ -53,16 +53,16 @@ export class AuthService {
         try {
             user = await this.userService.findUser({ email: dto.email });
         } catch (err) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Incorrect username or password');
         }
 
         if (!user || !user.passwordHash) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Incorrect username or password');
         }
 
         const isMatch = await bcrypt.compare(dto.password, user.passwordHash);
         if (!isMatch) {
-            throw new UnauthorizedException('Invalid credentials');
+            throw new UnauthorizedException('Incorrect username or password');
         }
 
         const token = this.signToken(user._id);

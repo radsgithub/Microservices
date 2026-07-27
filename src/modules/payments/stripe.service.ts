@@ -20,14 +20,18 @@ export class StripeService {
         amountCents: number;
         currency: string;
         metadata: Record<string, string>;
+        shipping?: Stripe.PaymentIntentCreateParams.Shipping;
     }): Promise<Stripe.PaymentIntent> {
-        return this.stripe.paymentIntents.create({
+        const payload: any = {
             amount: params.amountCents,
             currency: params.currency.toLowerCase(),
             capture_method: 'manual',
             automatic_payment_methods: { enabled: true },
+            automatic_tax: { enabled: true },
+            ...(params.shipping ? { shipping: params.shipping } : {}),
             metadata: params.metadata,
-        });
+        };
+        return this.stripe.paymentIntents.create(payload);
     }
 
     async retrievePaymentIntent(id: string): Promise<Stripe.PaymentIntent> {
