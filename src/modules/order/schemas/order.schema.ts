@@ -37,6 +37,9 @@ export class OrderItem {
     @Prop({ type: Number, required: true })
     printifyVariantId!: number;
 
+    @Prop({ type: String, enum: ['printify', 'printful'], default: 'printify' })
+    provider?: string;
+
     @Prop({ type: String, required: true })
     name!: string;
 
@@ -114,6 +117,9 @@ export class Order {
 
     // Printify linkage
     @Prop({ type: String, index: true }) printifyOrderId?: string;
+
+    // Printful linkage
+    @Prop({ type: String, index: true }) printfulOrderId?: string;
 
     @Prop({ type: Number, default: 0, min: 0 }) refundedCents!: number;
 

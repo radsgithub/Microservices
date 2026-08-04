@@ -13,11 +13,13 @@ import { ReconciliationService } from './reconciliation.service';
 import { AdminController } from './admin.controller';
 import { OrderModule } from '../order/order.module';
 import { PrintifyModule } from '../printify/printify.module';
+import { PrintfulModule } from '../printful/printful.module';
 
 @Module({
     imports: [
         OrderModule, // provides OrderService + Order model
         PrintifyModule,
+        PrintfulModule,
         MongooseModule.forFeature([
             { name: Payment.name, schema: PaymentSchema },
             { name: Refund.name, schema: RefundSchema },

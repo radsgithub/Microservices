@@ -5,6 +5,7 @@ import { Order, OrderDocument } from '../order/schemas/order.schema';
 import { Payment, PaymentDocument } from './schemas/payment.schema';
 import { OrderService } from '../order/order.service';
 import { PrintifyService } from '../printify/printify.service';
+import { PrintfulService } from '../printful/printful.service';
 import { StripeService } from './stripe.service';
 import { AuditService } from '../../common/audit/audit.service';
 import { CheckoutDto } from './dto/checkout.dto';
@@ -17,6 +18,7 @@ export class CheckoutService {
         @InjectModel(Payment.name) private readonly paymentModel: Model<PaymentDocument>,
         private readonly orderService: OrderService,
         private readonly printify: PrintifyService,
+        private readonly printful: PrintfulService,
         private readonly stripe: StripeService,
         private readonly audit: AuditService,
     ) { }
@@ -25,7 +27,19 @@ export class CheckoutService {
     // authorization hold (manual capture), and records the Order + Payment
     // atomically. Returns the client secret for the browser to confirm.
     async start(userId: string, dto: CheckoutDto) {
-        const priced = await this.printify.priceOrder(dto.items);
+        const printifyItems = dto.items.filter(i => !i.productId.startsWith('printful-'));
+        const printfulItems = dto.items.filter(i => i.productId.startsWith('printful-'));
+
+        let printifyPriced = { lines: [] as any[], subtotalCents: 0 };
+        let printfulPriced = { lines: [] as any[], subtotalCents: 0 };
+
+        if (printifyItems.length > 0) {
+            printifyPriced = await this.printify.priceOrder(printifyItems);
+        }
+        if (printfulItems.length > 0) {
+            printfulPriced = await this.printful.priceOrder(printfulItems);
+        }
+
         const printifyAddress = dto.shipping ? {
             first_name: dto.shipping.firstName || 'Valued',
             last_name: dto.shipping.lastName || 'Customer',
@@ -39,15 +53,25 @@ export class CheckoutService {
             phone: '',
         } : undefined;
 
-        const shippingCents = printifyAddress
-            ? await this.printify.calculateShippingCost(
-                dto.items.map((i) => ({ product_id: i.productId, variant_id: i.variantId, quantity: i.quantity })),
-                printifyAddress,
-            )
-            : 0;
+        let shippingCents = 0;
+        if (printifyAddress) {
+            if (printifyItems.length > 0) {
+                shippingCents += await this.printify.calculateShippingCost(
+                    printifyItems.map((i) => ({ product_id: i.productId, variant_id: i.variantId, quantity: i.quantity })),
+                    printifyAddress,
+                );
+            }
+            if (printfulItems.length > 0) {
+                shippingCents += await this.printful.calculateShippingCost(
+                    printfulItems.map((i) => ({ product_id: i.productId, variant_id: i.variantId, quantity: i.quantity })),
+                    printifyAddress,
+                );
+            }
+        }
 
         const currency = process.env.STORE_CURRENCY || 'USD';
-        const totalCents = priced.subtotalCents + shippingCents;
+        const subtotalCents = printifyPriced.subtotalCents + printfulPriced.subtotalCents;
+        const totalCents = subtotalCents + shippingCents;
         if (totalCents <= 0) throw new BadRequestException('Cart total is zero.');
 
         const intent = await this.stripe.createPaymentIntent({
@@ -71,11 +95,25 @@ export class CheckoutService {
         let orderId = '';
         try {
             await session.withTransaction(async () => {
+                const allLines = [
+                    ...printifyPriced.lines.map(l => ({ ...l, provider: 'printify' })),
+                    ...printfulPriced.lines.map(l => ({
+                        printifyProductId: l.printfulProductId,
+                        printifyVariantId: l.printfulVariantId,
+                        quantity: l.quantity,
+                        unitPriceCents: l.unitPriceCents,
+                        name: l.name,
+                        variantLabel: l.variantLabel,
+                        image: l.image,
+                        provider: 'printful',
+                    })),
+                ];
+
                 const order = await this.orderService.create(
                     {
                         userId,
-                        items: priced.lines,
-                        subtotalCents: priced.subtotalCents,
+                        items: allLines,
+                        subtotalCents,
                         shippingCents,
                         totalCents,
                         currency,
@@ -153,33 +191,64 @@ export class CheckoutService {
         const userId = order.userId.toString();
         const addr = order.shippingAddress;
         try {
-            // 1) Create the Printify order (does NOT charge yet).
-            const printifyOrder = await this.printify.createOrder({
-                external_id: orderId,
-                label: `VAID ${orderId}`,
-                line_items: order.items.map((i) => ({
-                    product_id: i.printifyProductId,
-                    variant_id: i.printifyVariantId,
-                    quantity: i.quantity,
-                })),
-                address_to: {
-                    first_name: addr.firstName,
-                    last_name: addr.lastName,
-                    email: addr.email,
-                    phone: addr.phone,
-                    country: addr.country,
-                    region: addr.region,
-                    address1: addr.address1,
-                    address2: addr.address2 || '',
-                    city: addr.city,
-                    zip: addr.zip,
-                },
-            });
+            const printifyItems = order.items.filter(i => i.provider !== 'printful');
+            const printfulItems = order.items.filter(i => i.provider === 'printful');
+            let createdPrintifyOrderId: string | undefined;
+            let createdPrintfulOrderId: string | undefined;
+
+            // 1) Create the supplier orders (does NOT charge yet).
+            if (printifyItems.length > 0) {
+                const printifyOrder = await this.printify.createOrder({
+                    external_id: orderId,
+                    label: `VAID ${orderId}`,
+                    line_items: printifyItems.map((i) => ({
+                        product_id: i.printifyProductId,
+                        variant_id: i.printifyVariantId,
+                        quantity: i.quantity,
+                    })),
+                    address_to: {
+                        first_name: addr.firstName,
+                        last_name: addr.lastName,
+                        email: addr.email,
+                        phone: addr.phone,
+                        country: addr.country,
+                        region: addr.region,
+                        address1: addr.address1,
+                        address2: addr.address2 || '',
+                        city: addr.city,
+                        zip: addr.zip,
+                    },
+                });
+                createdPrintifyOrderId = printifyOrder.id;
+            }
+
+            if (printfulItems.length > 0) {
+                const printfulOrder = await this.printful.createOrder({
+                    external_id: orderId,
+                    recipient: {
+                        name: `${addr.firstName} ${addr.lastName}`.trim(),
+                        email: addr.email,
+                        phone: addr.phone,
+                        country_code: addr.country,
+                        state_code: addr.region,
+                        address1: addr.address1,
+                        address2: addr.address2 || '',
+                        city: addr.city,
+                        zipcode: addr.zip,
+                    },
+                    items: printfulItems.map((i) => ({
+                        sync_variant_id: i.printifyVariantId,
+                        quantity: i.quantity,
+                    })),
+                });
+                createdPrintfulOrderId = printfulOrder.id;
+            }
 
             // 2) Capture the customer's money.
             await this.stripe.capture(pi.id);
 
-            order.printifyOrderId = printifyOrder.id;
+            if (createdPrintifyOrderId) order.printifyOrderId = createdPrintifyOrderId;
+            if (createdPrintfulOrderId) order.printfulOrderId = createdPrintfulOrderId;
             order.orderStatus = 'in_production';
             order.paymentStatus = 'captured';
             await order.save();
@@ -188,18 +257,19 @@ export class CheckoutService {
                 { $set: { status: 'captured', capturedAt: new Date() } },
             );
 
-            // 3) Optionally push to production (charges YOUR Printify card).
+            // 3) Optionally push to production.
             let autoFulfilled = false;
             if (process.env.PRINTIFY_AUTO_FULFILL === 'true') {
-                await this.printify.sendToProduction(printifyOrder.id);
+                if (createdPrintifyOrderId) await this.printify.sendToProduction(createdPrintifyOrderId);
+                if (createdPrintfulOrderId) await this.printful.sendToProduction(createdPrintfulOrderId);
                 autoFulfilled = true;
             }
 
             await this.audit.log({
                 action: 'checkout.completed',
-                message: `Order ${orderId} captured + sent to Printify${autoFulfilled ? ' (production)' : ''}`,
+                message: `Order ${orderId} captured + sent to suppliers${autoFulfilled ? ' (production)' : ''}`,
                 orderId, userId,
-                meta: { printifyOrderId: printifyOrder.id, paymentIntentId: pi.id, autoFulfilled },
+                meta: { printifyOrderId: createdPrintifyOrderId, printfulOrderId: createdPrintfulOrderId, paymentIntentId: pi.id, autoFulfilled },
             });
             return order;
         } catch (err) {

@@ -4,6 +4,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 
 import { AuditModule } from './common/audit/audit.module';
 import { AuthModule } from './modules/auth/auth.module';
+import { PrintifyModule } from './modules/printify/printify.module';
+import { PrintfulModule } from './modules/printful/printful.module';
 import { UserModule } from './modules/user/user.module';
 import { OrderModule } from './modules/order/order.module';
 import { PaymentsModule } from './modules/payments/payments.module';
@@ -29,7 +31,9 @@ import { AppController } from './app.controller';
         // Global audit-logging (order/payment/refund trail).
         AuditModule,
 
-        // Feature modules. Products come from Printify (no local Product/Cart).
+        // Feature modules. Products come from Printify and Printful (no local Product/Cart).
+        PrintifyModule,
+        PrintfulModule,
         UserModule,
         AuthModule,
         OrderModule,
