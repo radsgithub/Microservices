@@ -100,6 +100,7 @@ export class Order {
     // All money in minor units (cents). Never floats.
     @Prop({ type: Number, required: true, min: 0 }) subtotalCents!: number;
     @Prop({ type: Number, default: 0, min: 0 }) shippingCents!: number;
+    @Prop({ type: Number, default: 0, min: 0 }) taxCents!: number;
     @Prop({ type: Number, required: true, min: 0 }) totalCents!: number;
     @Prop({ type: String, required: true, default: 'USD' }) currency!: string;
 

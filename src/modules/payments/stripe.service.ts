@@ -14,6 +14,54 @@ export class StripeService {
         return this._stripe;
     }
 
+    async calculateTax(params: {
+        currency: string;
+        subtotalCents: number;
+        shippingCents: number;
+        address: {
+            line1: string;
+            line2?: string;
+            city: string;
+            state: string;
+            postal_code: string;
+            country: string;
+        };
+    }): Promise<number> {
+        try {
+            const calculation = await this.stripe.tax.calculations.create({
+                currency: params.currency.toLowerCase(),
+                customer_details: {
+                    address: {
+                        line1: params.address.line1,
+                        line2: params.address.line2,
+                        city: params.address.city,
+                        state: params.address.state,
+                        postal_code: params.address.postal_code,
+                        country: params.address.country,
+                    },
+                    address_source: 'shipping',
+                },
+                line_items: [
+                    {
+                        amount: params.subtotalCents,
+                        reference: 'Products Subtotal',
+                        tax_behavior: 'exclusive',
+                    }
+                ],
+                shipping_cost: params.shippingCents > 0 ? {
+                    amount: params.shippingCents,
+                    tax_behavior: 'exclusive',
+                } : undefined,
+            });
+            console.log(`[Stripe Tax] Calculated tax for address ${params.address.state}, ${params.address.country}:`, calculation.tax_amount_exclusive);
+            return calculation.tax_amount_exclusive;
+        } catch (error: any) {
+            console.error('[Stripe Tax Calculation Error]:', error?.message || error);
+            // Fallback to 0 tax if there is an error (e.g. unrecognized address)
+            return 0;
+        }
+    }
+
     // Creates an AUTHORIZATION hold (manual capture). Money is held, not taken,
     // until we capture after Printify accepts the order.
     async createPaymentIntent(params: {
@@ -27,7 +75,6 @@ export class StripeService {
             currency: params.currency.toLowerCase(),
             capture_method: 'manual',
             automatic_payment_methods: { enabled: true },
-            automatic_tax: { enabled: true },
             ...(params.shipping ? { shipping: params.shipping } : {}),
             metadata: params.metadata,
         };

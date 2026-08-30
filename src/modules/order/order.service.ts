@@ -25,6 +25,7 @@ export interface CreateOrderData {
     }[];
     subtotalCents: number;
     shippingCents?: number;
+    taxCents?: number;
     totalCents: number;
     currency: string;
     shippingAddress: {
@@ -60,6 +61,7 @@ export class OrderService {
                     items: data.items,
                     subtotalCents: data.subtotalCents,
                     shippingCents: data.shippingCents ?? 0,
+                    taxCents: data.taxCents ?? 0,
                     totalCents: data.totalCents,
                     currency: data.currency,
                     orderStatus: 'created',

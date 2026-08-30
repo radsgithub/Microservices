@@ -71,7 +71,25 @@ export class CheckoutService {
 
         const currency = process.env.STORE_CURRENCY || 'USD';
         const subtotalCents = printifyPriced.subtotalCents + printfulPriced.subtotalCents;
-        const totalCents = subtotalCents + shippingCents;
+        
+        let taxCents = 0;
+        if (dto.shipping) {
+            taxCents = await this.stripe.calculateTax({
+                currency,
+                subtotalCents,
+                shippingCents,
+                address: {
+                    line1: dto.shipping.address1,
+                    line2: dto.shipping.address2 || undefined,
+                    city: dto.shipping.city,
+                    state: dto.shipping.region,
+                    postal_code: dto.shipping.zip,
+                    country: dto.shipping.country,
+                }
+            });
+        }
+        
+        const totalCents = subtotalCents + shippingCents + taxCents;
         if (totalCents <= 0) throw new BadRequestException('Cart total is zero.');
 
         const intent = await this.stripe.createPaymentIntent({
@@ -115,6 +133,7 @@ export class CheckoutService {
                         items: allLines,
                         subtotalCents,
                         shippingCents,
+                        taxCents,
                         totalCents,
                         currency,
                         shippingAddress: dto.shipping,
@@ -149,7 +168,7 @@ export class CheckoutService {
             meta: { paymentIntentId: intent.id, totalCents, currency },
         });
 
-        return { orderId, clientSecret: intent.client_secret, amountCents: totalCents, shippingCents, currency };
+        return { orderId, clientSecret: intent.client_secret, amountCents: totalCents, shippingCents, taxCents, currency };
     }
 
     // STEP 2 — confirm (browser path). Delegates to the shared, idempotent

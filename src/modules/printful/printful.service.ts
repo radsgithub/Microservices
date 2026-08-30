@@ -113,7 +113,7 @@ export class PrintfulService {
 
         for (const pid of productIds) {
             const cleanId = pid.replace(/^printful-/, '');
-            const detail = await this.api<any>(`/store/products/@${cleanId}`);
+            const detail = await this.api<any>(`/store/products/${cleanId}`);
             productMap.set(cleanId, detail);
         }
 
