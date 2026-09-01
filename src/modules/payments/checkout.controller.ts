@@ -22,4 +22,10 @@ export class CheckoutController {
     confirm(@Req() req: any, @Param('orderId') orderId: string) {
         return this.checkoutService.confirm(req.userId, orderId);
     }
+
+    // Refund a $1 test payment instantly (demo account only).
+    @Post(':orderId/refund-test')
+    refundTest(@Req() req: any, @Param('orderId') orderId: string) {
+        return this.checkoutService.refundTest(req.userId, orderId);
+    }
 }

@@ -37,4 +37,7 @@ export class CheckoutDto {
     @ValidateNested()
     @Type(() => ShippingDto)
     shipping!: ShippingDto;
+
+    @IsOptional()
+    isTestPayment?: boolean;
 }

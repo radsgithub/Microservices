@@ -8,6 +8,7 @@ import { PrintifyService } from '../printify/printify.service';
 import { PrintfulService } from '../printful/printful.service';
 import { StripeService } from './stripe.service';
 import { AuditService } from '../../common/audit/audit.service';
+import { UserService } from '../user/user.service';
 import { CheckoutDto } from './dto/checkout.dto';
 
 @Injectable()
@@ -21,6 +22,7 @@ export class CheckoutService {
         private readonly printful: PrintfulService,
         private readonly stripe: StripeService,
         private readonly audit: AuditService,
+        private readonly userService: UserService,
     ) { }
 
     // STEP 1 — authorize. Prices the cart from Printify, creates a Stripe
@@ -89,8 +91,16 @@ export class CheckoutService {
             });
         }
         
-        const totalCents = subtotalCents + shippingCents + taxCents;
+        let totalCents = subtotalCents + shippingCents + taxCents;
         if (totalCents <= 0) throw new BadRequestException('Cart total is zero.');
+
+        // Allow user@tanvish.com to test checkout for exactly $1.00
+        if (dto.isTestPayment) {
+            const user = await this.userService.findById(userId);
+            if (user?.email === 'user@tanvish.com') {
+                totalCents = 100;
+            }
+        }
 
         const intent = await this.stripe.createPaymentIntent({
             amountCents: totalCents,
@@ -216,51 +226,55 @@ export class CheckoutService {
             let createdPrintfulOrderId: string | undefined;
 
             // 1) Create the supplier orders (does NOT charge yet).
-            if (printifyItems.length > 0) {
-                const printifyOrder = await this.printify.createOrder({
-                    external_id: orderId,
-                    label: `VAID ${orderId}`,
-                    line_items: printifyItems.map((i) => ({
-                        product_id: i.printifyProductId,
-                        variant_id: i.printifyVariantId,
-                        quantity: i.quantity,
-                    })),
-                    address_to: {
-                        first_name: addr.firstName,
-                        last_name: addr.lastName,
-                        email: addr.email,
-                        phone: addr.phone,
-                        country: addr.country,
-                        region: addr.region,
-                        address1: addr.address1,
-                        address2: addr.address2 || '',
-                        city: addr.city,
-                        zip: addr.zip,
-                    },
-                });
-                createdPrintifyOrderId = printifyOrder.id;
-            }
+            if (order.totalCents !== 100) {
+                if (printifyItems.length > 0) {
+                    const printifyOrder = await this.printify.createOrder({
+                        external_id: orderId,
+                        line_items: printifyItems.map((i) => ({
+                            product_id: i.printifyProductId,
+                            variant_id: i.printifyVariantId,
+                            quantity: i.quantity,
+                        })),
+                        label: `VAID ${orderId}`,
+                        address_to: {
+                            first_name: addr.firstName,
+                            last_name: addr.lastName,
+                            email: addr.email,
+                            phone: addr.phone,
+                            country: addr.country,
+                            region: addr.region,
+                            address1: addr.address1,
+                            address2: addr.address2 || '',
+                            city: addr.city,
+                            zip: addr.zip,
+                        },
+                    });
+                    createdPrintifyOrderId = printifyOrder.id;
+                }
 
-            if (printfulItems.length > 0) {
-                const printfulOrder = await this.printful.createOrder({
-                    external_id: orderId,
-                    recipient: {
-                        name: `${addr.firstName} ${addr.lastName}`.trim(),
-                        email: addr.email,
-                        phone: addr.phone,
-                        country_code: addr.country,
-                        state_code: addr.region,
-                        address1: addr.address1,
-                        address2: addr.address2 || '',
-                        city: addr.city,
-                        zipcode: addr.zip,
-                    },
-                    items: printfulItems.map((i) => ({
-                        sync_variant_id: i.printifyVariantId,
-                        quantity: i.quantity,
-                    })),
-                });
-                createdPrintfulOrderId = printfulOrder.id;
+                if (printfulItems.length > 0) {
+                    const printfulOrder = await this.printful.createOrder({
+                        external_id: orderId,
+                        recipient: {
+                            name: `${addr.firstName} ${addr.lastName}`.trim(),
+                            email: addr.email,
+                            phone: addr.phone,
+                            country_code: addr.country,
+                            state_code: addr.region,
+                            address1: addr.address1,
+                            address2: addr.address2 || '',
+                            city: addr.city,
+                            zipcode: addr.zip,
+                        },
+                        items: printfulItems.map((i) => ({
+                            sync_variant_id: i.printifyVariantId,
+                            quantity: i.quantity,
+                        })),
+                    });
+                    createdPrintfulOrderId = printfulOrder.id;
+                }
+            } else {
+                this.audit.log({ action: 'test.order_skipped', message: `Skipping manufacturer APIs for test order ${orderId}`, orderId, userId: order.userId });
             }
 
             // 2) Capture the customer's money.
@@ -377,5 +391,42 @@ export class CheckoutService {
             orderId: order._id.toString(),
             meta: { printifyStatus: status },
         });
+    }
+
+    async refundTest(userId: string, orderId: string) {
+        const user = await this.userService.findById(userId);
+        if (user?.email !== 'user@tanvish.com') {
+            throw new BadRequestException('Only the demo account can use this feature.');
+        }
+
+        const order = await this.orderModel.findOne({ _id: orderId, userId }).exec();
+        if (!order) {
+            throw new NotFoundException('Order not found.');
+        }
+        if (order.totalCents !== 100) {
+            throw new BadRequestException('Only $1 test payments can be instantly refunded.');
+        }
+
+        if (!order.stripePaymentIntentId) {
+            throw new BadRequestException('Payment intent not found on order.');
+        }
+
+        try {
+            await this.stripe.refund({ paymentIntentId: order.stripePaymentIntentId, reason: 'requested_by_customer' });
+            
+            // Mark order as refunded
+            order.orderStatus = 'refunded';
+            order.paymentStatus = 'refunded';
+            await order.save();
+            
+            this.audit.log({
+                action: 'test.refunded',
+                message: `Test payment ${orderId} instantly refunded for demo account`,
+                orderId, userId
+            });
+            return { success: true, message: 'Test payment refunded successfully.' };
+        } catch (error: any) {
+            throw new BadRequestException(`Failed to refund: ${error.message}`);
+        }
     }
 }

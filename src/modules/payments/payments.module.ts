@@ -15,11 +15,14 @@ import { OrderModule } from '../order/order.module';
 import { PrintifyModule } from '../printify/printify.module';
 import { PrintfulModule } from '../printful/printful.module';
 
+import { UserModule } from '../user/user.module';
+
 @Module({
     imports: [
         OrderModule, // provides OrderService + Order model
         PrintifyModule,
         PrintfulModule,
+        UserModule,
         MongooseModule.forFeature([
             { name: Payment.name, schema: PaymentSchema },
             { name: Refund.name, schema: RefundSchema },
